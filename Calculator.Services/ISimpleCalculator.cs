@@ -11,7 +11,6 @@ namespace Calculator.Services
         public int Add(int start, int amount);
         public int Subtract(int start, int amount);
         public int Multiplication(int start, int amount);
-        public int Divide(int start, int amount);  
-
+        public int Divide(int start, int amount);
     }
 }

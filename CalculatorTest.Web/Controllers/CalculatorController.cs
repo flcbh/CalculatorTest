@@ -1,50 +1,54 @@
 ﻿using Calculator.Services;
+using CalculatorTest.Web.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 
-// For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
 namespace CalculatorTest.Web.Controllers
 {
-    [Route("api/[controller]")]
     [ApiController]
+    [Route("api/[controller]")]
     public class CalculatorController : ControllerBase
     {
-        ISimpleCalculator _calculator;
+        readonly ISimpleCalculator _calculator;
         public CalculatorController(ISimpleCalculator calculator)
         {
             _calculator = calculator;
         }
 
-        // GET: api/<CalculatorController>
-        [HttpGet]
-        public IEnumerable<string> Get()
+        [HttpPost("calc/")]
+        public ActionResult<CalculatorViewModel> Calculator([FromBody] CalculatorViewModel model)
         {
-            return new string[] { "value1", "value2" };
-        }
+            if (model == null)
+            {
+                return BadRequest();
+            }
 
-        // GET api/<CalculatorController>/5
-        [HttpGet("{id}")]
-        public string Get(int id)
-        {
-            return "value";
-        }
+            try
+            {
+                switch (model.Operation)
+                {
+                    case ("-"):
+                        model.Result = _calculator.Subtract(model.Value1, model.Value2);
+                        break;
+                    case ("+"):
+                        model.Result = _calculator.Add(model.Value1, model.Value2);
+                        break;
+                    case ("*"):
+                        model.Result = _calculator.Multiplication(model.Value1, model.Value2);
+                        break;
+                    case ("/"):
+                        model.Result = _calculator.Divide(model.Value1, model.Value2);
+                        break;
+                    default:
+                        break;
+                }
 
-        // POST api/<CalculatorController>
-        [HttpPost]
-        public void Post([FromBody] string value)
-        {
-        }
-
-        // PUT api/<CalculatorController>/5
-        [HttpPut("{id}")]
-        public void Put(int id, [FromBody] string value)
-        {
-        }
-
-        // DELETE api/<CalculatorController>/5
-        [HttpDelete("{id}")]
-        public void Delete(int id)
-        {
+                return Ok(model);
+            } 
+            catch (Exception ex)
+            {
+                return BadRequest(ex);
+            }
         }
     }
 }

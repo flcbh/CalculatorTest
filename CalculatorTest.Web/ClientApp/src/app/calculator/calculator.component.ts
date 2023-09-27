@@ -1,4 +1,8 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
+import { NgForm } from "@angular/forms";
+import { Model } from '../model/calculator-view-model';
+import { Service } from "../services/calculator.service";
+import { FormBuilder, FormGroup } from '@angular/forms';
 
 
 @Component({
@@ -7,9 +11,13 @@ import { Component } from '@angular/core';
 })
 export class CalculatorComponent {
 
+  model = {} as Model;
 
   input: string = '';
   result: string = '';
+
+  constructor(private Service: Service, private builder: FormBuilder) { }
+
 
 
   pressNum(num: string) {
@@ -75,6 +83,7 @@ export class CalculatorComponent {
   allClear() {
     this.result = '';
     this.input = '';
+    this.model.operation = '';
   }
 
   calcAnswer() {
@@ -90,11 +99,41 @@ export class CalculatorComponent {
 
     if (lastKey === '/' || lastKey === '*' || lastKey === '-' || lastKey === '+' || lastKey === '.') {
       formula = formula.substr(0, formula.length - 1);
+      this.model.operation = lastKey;
     }
 
     console.log("Formula " + formula);
-    this.result = eval(formula);
+
+    var index = formula.indexOf(this.model.operation);
+    var lengh = formula.length;
+
+    if (index > 0) {
+      this.model.value1 = +formula.substring(0, index);
+      this.model.value2 = +formula.substring(index + 1, lengh);
+    }
+
+      //this.result = eval(formula);
   }
+
+  onSubmit(form: NgForm) {
+    if (this.model.value1 !== undefined && this.model.value2 !== undefined) {
+      this.Service.Calculate(this.model).subscribe(data => {
+        this.result = data.result.toString();
+        this.input = '';
+        console.log("Result", data)
+      },
+        error => {
+          console.log(error);
+        }
+      );
+    }
+  }
+
+  cleanForm(form: NgForm) {
+    form.resetForm();
+    this.allClear();
+  }
+
 
   getAnswer() {
     this.calcAnswer();
